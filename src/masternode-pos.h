@@ -6,7 +6,7 @@
 #include "sync.h"
 #include "net.h"
 #include "key.h"
-#include "core.h"
+#include "main.h"
 #include "util.h"
 #include "script.h"
 #include "base58.h"
