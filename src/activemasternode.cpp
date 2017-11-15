@@ -1,5 +1,5 @@
 
-#include "core.h"
+#include "main.h"
 #include "protocol.h"
 #include "activemasternode.h"
 #include "masternodeman.h"
