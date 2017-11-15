@@ -166,7 +166,7 @@ void ThreadStakeMiner(CWallet *pwallet);
 
 
 /** (try to) add transaction to memory pool **/
-bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool fLimitFree,
+//bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool fLimitFree,
                         bool* pfMissingInputs);
 
 bool AcceptableInputs(CTxMemPool& pool, const CTransaction &txo, bool fLimitFree,
@@ -537,7 +537,7 @@ public:
     int GetDepthInMainChain() const { CBlockIndex *pindexRet; return GetDepthInMainChain(pindexRet); }
     bool IsInMainChain() const { CBlockIndex *pindexRet; return GetDepthInMainChainINTERNAL(pindexRet) > 0; }
     int GetBlocksToMaturity() const;
-    bool AcceptToMemoryPool(bool fLimitFree=true);
+    bool AcceptableInputs(bool fLimitFree=true);
     int GetTransactionLockSignatures() const;
     bool IsTransactionLockTimedOut() const;
 };
