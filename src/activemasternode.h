@@ -9,7 +9,7 @@
 #include "sync.h"
 #include "net.h"
 #include "key.h"
-#include "core.h"
+#include "main.h"
 #include "init.h"
 #include "wallet.h"
 #include "darksend.h"
