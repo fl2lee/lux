@@ -5,7 +5,7 @@
 #include "sync.h"
 #include "net.h"
 #include "key.h"
-#include "core.h"
+#include "main.h"
 #include "util.h"
 #include "script.h"
 #include "base58.h"
@@ -244,7 +244,7 @@ public:
     }
 
     uint256 GetHash(){
-        uint256 n2 = HashX11(BEGIN(nBlockHeight), END(nBlockHeight));
+        uint256 n2 = Phi1612(BEGIN(nBlockHeight), END(nBlockHeight));
         uint256 n3 = vin.prevout.hash > n2 ? (vin.prevout.hash - n2) : (n2 - vin.prevout.hash);
 
         return n3;
