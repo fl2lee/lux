@@ -2,6 +2,7 @@
 #include "net.h"
 #include "masternodeconfig.h"
 #include "util.h"
+#include <base58.h>
 
 CMasternodeConfig masternodeConfig;
 
@@ -23,30 +24,17 @@ bool CMasternodeConfig::read(boost::filesystem::path path) {
         }
         std::istringstream iss(line);
         std::string alias, ip, privKey, txHash, outputIndex;
+        iss.str(line);
+        iss.clear();
         if (!(iss >> alias >> ip >> privKey >> txHash >> outputIndex)) {
-            LogPrintf("CMasternodeConfig::read - Could not parse masternode.conf. Line: %s\n", line.c_str());
-            streamConfig.close();
-            return false;
-        }
-
-        if(Params().NetworkID() == CChainParams::MAIN){
-            if(CService(ip).GetPort() != 28666) {
-                LogPrintf("Invalid port detected in masternode.conf: %s (must be 17170 for mainnet)\n", line.c_str());
-                streamConfig.close();
-                return false;
-            }
-        } else if(CService(ip).GetPort() == 28666) {
-            LogPrintf("Invalid port detected in masternode.conf: %s (17170 must be only on mainnet)\n", line.c_str());
-            streamConfig.close();
-            return false;
-        }
-
-        if (!(CService(ip).IsIPv4() && CService(ip).IsRoutable())) {
-            LogPrintf("Invalid Address detected in masternode.conf: %s (IPV4 ONLY) \n", line.c_str());
+            LogPrintf("Could not parse masternode.conf line: %s\n", line.c_str());
             streamConfig.close();
             return false;
         }
 
         add(alias, ip, privKey, txHash, outputIndex);
     }
+
+    streamConfig.close();
+    return true;
 }
