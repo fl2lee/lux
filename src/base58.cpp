@@ -20,7 +20,7 @@
 static const char* pszBase58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 bool DecodeBase58(const char* psz, std::vector<unsigned char>& vchRet) {
-    CAutoBN_CLUX pctx;
+    CAutoBN_CTX pctx;
     vchRet.clear();
     CBigNum bn58 = 58;
     CBigNum bn = 0;
@@ -226,11 +226,11 @@ int CBase58Data::CompareTo(const CBase58Data& b58) const {
 }
 
 namespace {
-    class CLuxcoinAddressVisitor : public boost::static_visitor<bool> {
+    class CBitcoinAddressVisitor : public boost::static_visitor<bool> {
     private:
-        CLuxcoinAddress *addr;
+        CBitcoinAddress *addr;
     public:
-        CLuxcoinAddressVisitor(CLuxcoinAddress *addrIn) : addr(addrIn) { }
+        CBitcoinAddressVisitor(CBitcoinAddress *addrIn) : addr(addrIn) { }
 
         bool operator()(const CKeyID &id) const { return addr->Set(id); }
         bool operator()(const CScriptID &id) const { return addr->Set(id); }
@@ -250,28 +250,28 @@ namespace {
     };
 };
 
-bool CLuxcoinAddress::Set(const CKeyID &id) {
+bool CBitcoinAddress::Set(const CKeyID &id) {
     SetData(Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS), &id, 20);
     return true;
 }
 
-bool CLuxcoinAddress::Set(const CScriptID &id) {
+bool CBitcoinAddress::Set(const CScriptID &id) {
     SetData(Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS), &id, 20);
     return true;
 }
 
-bool CLuxcoinAddress::Set(const CTxDestination &dest) {
-    return boost::apply_visitor(CLuxcoinAddressVisitor(this), dest);
+bool CBitcoinAddress::Set(const CTxDestination &dest) {
+    return boost::apply_visitor(CBitcoinAddressVisitor(this), dest);
 }
 
-bool CLuxcoinAddress::IsValid() const {
+bool CBitcoinAddress::IsValid() const {
     bool fCorrectSize = vchData.size() == 20;
     bool fKnownVersion = vchVersion == Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS) ||
                          vchVersion == Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS);
     return fCorrectSize && fKnownVersion;
 }
 
-CTxDestination CLuxcoinAddress::Get() const {
+CTxDestination CBitcoinAddress::Get() const {
     if (!IsValid())
         return CNoDestination();
     uint160 id;
@@ -284,7 +284,7 @@ CTxDestination CLuxcoinAddress::Get() const {
         return CNoDestination();
 }
 
-bool CLuxcoinAddress::GetKeyID(CKeyID &keyID) const {
+bool CBitcoinAddress::GetKeyID(CKeyID &keyID) const {
     if (!IsValid() || vchVersion != Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS))
         return false;
     uint160 id;
@@ -293,7 +293,7 @@ bool CLuxcoinAddress::GetKeyID(CKeyID &keyID) const {
     return true;
 }
 
-bool CLuxcoinAddress::IsScript() const {
+bool CBitcoinAddress::IsScript() const {
     return IsValid() && vchVersion == Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS);
 }
 
