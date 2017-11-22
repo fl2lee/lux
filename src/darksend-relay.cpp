@@ -1,5 +1,5 @@
 
-#include "Luxsend-relay.h"
+#include "darksend-relay.h"
 
 
 CLuxsendRelay::CLuxsendRelay()
