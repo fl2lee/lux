@@ -319,7 +319,13 @@ HEADERS += src/qt/bitcoingui.h \
     src/obj/phi1612/sph_jh.h \
     src/obj/phi1612/sph_gost.h \
     src/obj/phi1612/sph_echo.h \
-    src/txdb-leveldb.h
+    src/txdb-leveldb.h \
+	src/masternodeman.h \
+	src/masternode-payment.h \
+	src/masternode-pos.h \
+	src/darksend-relay.h \
+	src/pubkey.h 
+	
 
 SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/transactiontablemodel.cpp \
@@ -425,7 +431,11 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/sendmessagesentry.cpp \
     src/qt/qvalidatedtextedit.cpp \
     src/qt/plugins/mrichtexteditor/mrichtextedit.cpp \
-    src/rpcsmessage.cpp
+    src/rpcsmessage.cpp \
+	src/masternodeman.cpp \
+	src/masternode-pos.cpp \
+	src/masternode-payment.cpp \
+	src/pubkey.cpp
 
 
 RESOURCES += \

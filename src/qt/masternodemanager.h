@@ -13,6 +13,7 @@
 
 namespace Ui {
     class MasternodeManager;
+
 }
 class ClientModel;
 class WalletModel;
@@ -32,12 +33,15 @@ public:
 
     void setClientModel(ClientModel *clientModel);
     void setWalletModel(WalletModel *walletModel);
+    
     void updateListConc();
+
 
 public slots:
     void updateNodeList();
-    void updateAdrenalineNode(QString alias, QString addr, QString privkey, QString collateral);
-    
+    void updateAdrenalineNode(QString alias, QString addr, QString privkey, QString txHash, QString txIndex, QString status);
+    void on_UpdateButton_clicked();
+
 signals:
 
 private:
@@ -49,20 +53,11 @@ private:
     int64_t nTimeFilterUpdated;
 	bool fFilterUpdated;
 	QFuture<void> f1;
-    void subscribeToCoreSignals();
-    void unsubscribeFromCoreSignals();
-   
+
 private slots:
-    void on_copyAddressButton_clicked();
     void on_createButton_clicked();
-    void on_editButton_clicked();
-    void on_getConfigButton_clicked();
     void on_startButton_clicked();
-    void on_stopButton_clicked();
     void on_startAllButton_clicked();
-    void on_stopAllButton_clicked();
-    void on_removeButton_clicked();
     void on_tableWidget_2_itemSelectionChanged();
 };
-
 #endif // MASTERNODEMANAGER_H
