@@ -16,7 +16,7 @@
 
 ////////////////////////////////////////////////
 //                                            //
-// THE SIMPLE DEFINITON, EXCLUDING DEBUG CODE //
+// THE SIMPLE DEFINITON, LUX DEBUG CODE //
 //                                            //
 ////////////////////////////////////////////////
 
@@ -61,7 +61,7 @@ template <typename PARENT>
 class LOCKABLE AnnotatedMixin : public PARENT
 {
 public:
-    void lock() EXCLUSIVE_LOCK_FUNCTION()
+    void lock() LUX_LOCK_FUNCTION()
     {
       PARENT::lock();
     }
@@ -71,7 +71,7 @@ public:
       PARENT::unlock();
     }
 
-    bool try_lock() EXCLUSIVE_TRYLOCK_FUNCTION(true)
+    bool try_lock() LUX_TRYLOCK_FUNCTION(true)
     {
       return PARENT::try_lock();
     }
