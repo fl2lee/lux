@@ -86,7 +86,7 @@ void AddEditAdrenalineNode::on_okButton_clicked()
             walletdb.WriteAccount(c.sAlias, account);
         }
 
-        c.sCollateralAddress = CBitcoinAddress(account.vchPubKey.GetID()).ToString();
+        c.sCollateralAddress = CLuxcoinAddress(account.vchPubKey.GetID()).ToString();
 
         pwalletMain->mapMyAdrenalineNodes.insert(make_pair(c.sAddress, c));
 	walletdb.WriteAdrenalineNodeConfig(c.sAddress, c);

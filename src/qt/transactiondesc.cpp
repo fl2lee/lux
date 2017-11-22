@@ -82,9 +82,9 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
         if (nNet > 0)
         {
             // Credit
-            if (CBitcoinAddress(rec->address).IsValid())
+            if (CLuxcoinAddress(rec->address).IsValid())
             {
-                CTxDestination address = CBitcoinAddress(rec->address).Get();
+                CTxDestination address = CLuxcoinAddress(rec->address).Get();
                 if (wallet->mapAddressBook.count(address))
                 {
                     strHTML += "<b>" + tr("From") + ":</b> " + tr("unknown") + "<br>";
@@ -108,7 +108,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
         // Online transaction
         std::string strAddress = wtx.mapValue["to"];
         strHTML += "<b>" + tr("To") + ":</b> ";
-        CTxDestination dest = CBitcoinAddress(strAddress).Get();
+        CTxDestination dest = CLuxcoinAddress(strAddress).Get();
         if (wallet->mapAddressBook.count(dest) && !wallet->mapAddressBook[dest].empty())
             strHTML += GUIUtil::HtmlEscape(wallet->mapAddressBook[dest]) + " ";
         strHTML += GUIUtil::HtmlEscape(strAddress) + "<br>";
@@ -168,7 +168,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
                         strHTML += "<b>" + tr("To") + ":</b> ";
                         if (wallet->mapAddressBook.count(address) && !wallet->mapAddressBook[address].empty())
                             strHTML += GUIUtil::HtmlEscape(wallet->mapAddressBook[address]) + " ";
-                        strHTML += GUIUtil::HtmlEscape(CBitcoinAddress(address).ToString());
+                        strHTML += GUIUtil::HtmlEscape(CLuxcoinAddress(address).ToString());
                         strHTML += "<br>";
                     }
                 }
@@ -255,7 +255,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
                     {
                         if (wallet->mapAddressBook.count(address) && !wallet->mapAddressBook[address].empty())
                             strHTML += GUIUtil::HtmlEscape(wallet->mapAddressBook[address]) + " ";
-                        strHTML += QString::fromStdString(CBitcoinAddress(address).ToString());
+                        strHTML += QString::fromStdString(CLuxcoinAddress(address).ToString());
                     }
                     strHTML = strHTML + " " + tr("Amount") + "=" + BitcoinUnits::formatWithUnit(unit, vout.nValue);
                     strHTML = strHTML + " IsMine=" + (wallet->IsMine(vout) ? tr("true") : tr("false")) + "</li>";

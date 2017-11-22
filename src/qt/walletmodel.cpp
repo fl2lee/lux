@@ -152,7 +152,7 @@ bool WalletModel::validateAddress(const QString &address)
             return true;
     };
     
-    CBitcoinAddress addressParsed(sAddr);
+    CLuxcoinAddress addressParsed(sAddr);
     return addressParsed.IsValid();
 }
 
@@ -248,7 +248,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
                     
                     CKeyID ckidTo = cpkTo.GetID();
                     
-                    CBitcoinAddress addrTo(ckidTo);
+                    CLuxcoinAddress addrTo(ckidTo);
                     
                     if (SecretToPublicKey(ephem_secret, ephem_pubkey) != 0)
                     {
@@ -317,7 +317,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
             }
            
             CScript scriptPubKey;
-            scriptPubKey.SetDestination(CBitcoinAddress(sAddr).Get());
+            scriptPubKey.SetDestination(CLuxcoinAddress(sAddr).Get());
             vecSend.push_back(make_pair(scriptPubKey, rcp.amount));
    	            
             
@@ -399,7 +399,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
     foreach(const SendCoinsRecipient &rcp, recipients)
     {
         std::string strAddress = rcp.address.toStdString();
-        CTxDestination dest = CBitcoinAddress(strAddress).Get();
+        CTxDestination dest = CLuxcoinAddress(strAddress).Get();
         std::string strLabel = rcp.label.toStdString();
         {
             LOCK(wallet->cs_wallet);
@@ -532,9 +532,9 @@ static void NotifyAddressBookChanged(WalletModel *walletmodel, CWallet *wallet, 
                                   Q_ARG(int, status));
     } else
     {
-        LogPrintf("NotifyAddressBookChanged %s %s isMine=%i status=%i\n", CBitcoinAddress(address).ToString().c_str(), label.c_str(), isMine, status);
+        LogPrintf("NotifyAddressBookChanged %s %s isMine=%i status=%i\n", CLuxcoinAddress(address).ToString().c_str(), label.c_str(), isMine, status);
         QMetaObject::invokeMethod(walletmodel, "updateAddressBook", Qt::QueuedConnection,
-                                  Q_ARG(QString, QString::fromStdString(CBitcoinAddress(address).ToString())),
+                                  Q_ARG(QString, QString::fromStdString(CLuxcoinAddress(address).ToString())),
                                   Q_ARG(QString, QString::fromStdString(label)),
                                   Q_ARG(bool, isMine),
                                   Q_ARG(int, status));
@@ -661,7 +661,7 @@ void WalletModel::listCoins(std::map<QString, std::vector<COutput> >& mapCoins) 
 
         CTxDestination address;
         if(!out.fSpendable || !ExtractDestination(cout.tx->vout[cout.i].scriptPubKey, address)) continue;
-        mapCoins[CBitcoinAddress(address).ToString().c_str()].push_back(out);
+        mapCoins[CLuxcoinAddress(address).ToString().c_str()].push_back(out);
     }
 }
 

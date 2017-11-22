@@ -43,7 +43,7 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
 
     Array a;
     BOOST_FOREACH(const CTxDestination& addr, addresses)
-        a.push_back(CBitcoinAddress(addr).ToString());
+        a.push_back(CLuxcoinAddress(addr).ToString());
     out.push_back(Pair("addresses", a));
 }
 
@@ -162,13 +162,13 @@ Value listunspent(const Array& params, bool fHelp)
     if (params.size() > 1)
         nMaxDepth = params[1].get_int();
 
-    set<CBitcoinAddress> setAddress;
+    set<CLuxcoinAddress> setAddress;
     if (params.size() > 2)
     {
         Array inputs = params[2].get_array();
         BOOST_FOREACH(Value& input, inputs)
         {
-            CBitcoinAddress address(input.get_str());
+            CLuxcoinAddress address(input.get_str());
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Lux address: ")+input.get_str());
             if (setAddress.count(address))
@@ -204,7 +204,7 @@ Value listunspent(const Array& params, bool fHelp)
         CTxDestination address;
         if (ExtractDestination(out.tx->vout[out.i].scriptPubKey, address))
         {
-            entry.push_back(Pair("address", CBitcoinAddress(address).ToString()));
+            entry.push_back(Pair("address", CLuxcoinAddress(address).ToString()));
             if (pwalletMain->mapAddressBook.count(address))
                 entry.push_back(Pair("account", pwalletMain->mapAddressBook[address]));
         }
@@ -270,10 +270,10 @@ Value createrawtransaction(const Array& params, bool fHelp)
         rawTx.vin.push_back(in);
     }
 
-    set<CBitcoinAddress> setAddress;
+    set<CLuxcoinAddress> setAddress;
     BOOST_FOREACH(const Pair& s, sendTo)
     {
-        CBitcoinAddress address(s.name_);
+        CLuxcoinAddress address(s.name_);
         if (!address.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Lux address: ")+s.name_);
 
@@ -338,7 +338,7 @@ Value decodescript(const Array& params, bool fHelp)
     }
     ScriptPubKeyToJSON(script, r, false);
 
-    r.push_back(Pair("p2sh", CBitcoinAddress(script.GetID()).ToString()));
+    r.push_back(Pair("p2sh", CLuxcoinAddress(script.GetID()).ToString()));
     return r;
 }
 
@@ -604,7 +604,7 @@ Value searchrawtransactions(const Array &params, bool fHelp)
         throw runtime_error(
             "searchrawtransactions <address> [verbose=1] [skip=0] [count=100]\n");
 
-    CBitcoinAddress address(params[0].get_str());
+    CLuxcoinAddress address(params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Bitcoin address");
     CTxDestination dest = address.Get();

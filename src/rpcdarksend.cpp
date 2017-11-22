@@ -88,7 +88,7 @@ Value darksend(const Array& params, bool fHelp)
             "<amount> is a real and is rounded to the nearest 0.00000001"
             + HelpRequiringPassphrase());
 
-    CBitcoinAddress address(params[0].get_str());
+    CLuxcoinAddress address(params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Lux address");
 
@@ -297,7 +297,7 @@ Value masternode(const Array& params, bool fHelp)
                 pubkey =GetScriptForDestination(mn.pubkey.GetID());
                 CTxDestination address1;
                 ExtractDestination(pubkey, address1);
-                CBitcoinAddress address2(address1);
+                CLuxcoinAddress address2(address1);
 
                 obj.push_back(Pair(mn.addr.ToString().c_str(),       address2.ToString().c_str()));
             } else if (strCommand == "protocol") {
@@ -515,7 +515,7 @@ Value masternode(const Array& params, bool fHelp)
             if(masternodePayments.GetBlockPayee(nHeight, payee)){
                 CTxDestination address1;
                 ExtractDestination(payee, address1);
-                CBitcoinAddress address2(address1);
+                CLuxcoinAddress address2(address1);
                 obj.push_back(Pair(boost::lexical_cast<std::string>(nHeight),       address2.ToString().c_str()));
             } else {
                 obj.push_back(Pair(boost::lexical_cast<std::string>(nHeight),       ""));

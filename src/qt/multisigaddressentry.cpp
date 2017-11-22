@@ -82,7 +82,7 @@ void MultisigAddressEntry::on_pubkey_textChanged(const QString &pubkey)
     std::vector<unsigned char> vchPubKey(ParseHex(pubkey.toStdString().c_str()));
     CPubKey pkey(vchPubKey);
     CKeyID keyID = pkey.GetID();
-    CBitcoinAddress address(keyID);
+    CLuxcoinAddress address(keyID);
     ui->address->setText(address.ToString().c_str());
 
     if(!model)
@@ -102,7 +102,7 @@ void MultisigAddressEntry::on_address_textChanged(const QString &address)
         return;
 
     // Get public key of address
-    CBitcoinAddress addr(address.toStdString().c_str());
+    CLuxcoinAddress addr(address.toStdString().c_str());
     CKeyID keyID;
     if(addr.GetKeyID(keyID))
     {
