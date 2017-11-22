@@ -324,9 +324,9 @@ HEADERS += src/qt/bitcoingui.h \
 	src/masternode-payments.h \
 	src/masternode-pos.h \
 	src/darksend-relay.h \
-	src/pubkey.h 
+	src/pubkey.h \
+	src/limitedmap.h
 	
-
 SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/transactiontablemodel.cpp \
     src/qt/addresstablemodel.cpp \
