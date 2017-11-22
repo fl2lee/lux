@@ -321,7 +321,7 @@ HEADERS += src/qt/bitcoingui.h \
     src/obj/phi1612/sph_echo.h \
     src/txdb-leveldb.h \
 	src/masternodeman.h \
-	src/masternode-payment.h \
+	src/masternode-payments.h \
 	src/masternode-pos.h \
 	src/darksend-relay.h \
 	src/pubkey.h 
@@ -434,7 +434,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/rpcsmessage.cpp \
 	src/masternodeman.cpp \
 	src/masternode-pos.cpp \
-	src/masternode-payment.cpp \
+	src/masternode-payments.cpp \
 	src/pubkey.cpp
 
 

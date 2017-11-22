@@ -3,9 +3,6 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
 
 #include "alert.h"
 #include "chainparams.h"
@@ -21,6 +18,15 @@
 #include "masternode.h"
 #include "spork.h"
 #include "smessage.h"
+#include "main.h"
+#include "masternodeman.h"
+#include "masternode-payments.h"
+#include "util.h"
+
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace boost;
@@ -582,20 +588,33 @@ bool CTransaction::CheckTransaction() const
     return true;
 }
 
-int64_t GetMinFee(const CTransaction& tx, unsigned int nBlockSize, enum GetMinFee_mode mode, unsigned int nBytes)
+int64_t GetMinFee(const CTransaction& tx, unsigned int nBytes, bool fAllowFree, enum GetMinFee_mode mode)
 {
     // Base fee is either MIN_TX_FEE or MIN_RELAY_TX_FEE
     int64_t nBaseFee = (mode == GMF_RELAY) ? MIN_RELAY_TX_FEE : MIN_TX_FEE;
 
-    unsigned int nNewBlockSize = nBlockSize + nBytes;
     int64_t nMinFee = (1 + (int64_t)nBytes / 1000) * nBaseFee;
 
-    // Raise the price as the block approaches full
-    if (nBlockSize != 1 && nNewBlockSize >= MAX_BLOCK_SIZE_GEN/2)
+    if (fAllowFree)
     {
-        if (nNewBlockSize >= MAX_BLOCK_SIZE_GEN)
-            return MAX_MONEY;
-        nMinFee *= MAX_BLOCK_SIZE_GEN / (MAX_BLOCK_SIZE_GEN - nNewBlockSize);
+        // There is a free transaction area in blocks created by most miners,
+        // * If we are relaying we allow transactions up to DEFAULT_BLOCK_PRIORITY_SIZE - 1000
+        //   to be considered to fall into this category. We don't want to encourage sending
+        //   multiple transactions instead of one big transaction to avoid fees.
+        // * If we are creating a transaction we allow transactions up to 1,000 bytes
+        //   to be considered safe and assume they can likely make it into this section.
+        if (nBytes < (mode == GMF_SEND ? 1000 : (DEFAULT_BLOCK_PRIORITY_SIZE - 1000)))
+            nMinFee = 0;
+    }
+
+    // This code can be removed after enough miners have upgraded to version 0.9.
+    // Until then, be safe when sending and require a fee if any output
+    // is less than CENT:
+    if (nMinFee < nBaseFee && mode == GMF_SEND)
+    {
+        BOOST_FOREACH(const CTxOut& txout, tx.vout)
+            if (txout.nValue < CENT)
+                nMinFee = nBaseFee;
     }
 
     if (!MoneyRange(nMinFee))
@@ -632,6 +651,17 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool fLimitFree,
     uint256 hash = tx.GetHash();
     if (pool.exists(hash))
         return false;
+
+
+// ----------- instantX transaction scanning ----------- //
+
+    BOOST_FOREACH(const CTxIn& in, tx.vin){
+        if(mapLockedInputs.count(in.prevout)){
+            if(mapLockedInputs[in.prevout] != tx.GetHash()){
+                return tx.DoS(0, error("AcceptToMemoryPool : conflicts with existing transaction lock: %s", reason));
+            }
+        }
+    }
 
     // Check for conflicts with in-memory transactions
     {
@@ -714,6 +744,11 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool fLimitFree,
             LogPrint("mempool", "Rate limit dFreeCount: %g => %g\n", dFreeCount, dFreeCount+nSize);
             dFreeCount += nSize;
         }
+
+             if (fRejectInsaneFee && nFees > MIN_RELAY_TX_FEE * 10000)
+            return error("AcceptableInputs: : insane fees %s, %d > %d",
+                         hash.ToString(),
+                         nFees, MIN_RELAY_TX_FEE * 10000);
 
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
@@ -862,6 +897,11 @@ bool AcceptableInputs(CTxMemPool& pool, const CTransaction &txo, bool fLimitFree
             dFreeCount += nSize;
         }
 
+            if (fRejectInsaneFee && nFees > txMinFee * 10000)
+            return error("AcceptableInputs: : insane fees %s, %d > %d",
+                         hash.ToString(),
+                         nFees, MIN_RELAY_TX_FEE * 10000);
+
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
         if (!tx.ConnectInputs(txdb, mapInputs, mapUnused, CDiskTxPos(1,1,1), pindexBest, true, false, STANDARD_SCRIPT_VERIFY_FLAGS, false))
@@ -914,6 +954,53 @@ int CMerkleTx::GetDepthInMainChain(CBlockIndex* &pindexRet) const
 
     return nResult;
 }
+
+bool CMerkleTx::IsTransactionLockTimedOut() const
+{
+    if(!fEnableInstantX) return -1;
+
+    //compile consessus vote
+    std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(GetHash());
+    if (i != mapTxLocks.end()){
+        return GetTime() > (*i).second.nTimeout;
+    }
+
+    return false;
+}
+
+int CMerkleTx::GetDepthInMainChain(CBlockIndex* &pindexRet, bool enableIX) const
+{
+    AssertLockHeld(cs_main);
+    int nResult = GetDepthInMainChainINTERNAL(pindexRet);
+    if (nResult == 0 && !mempool.exists(GetHash()))
+        return -1; // Not in chain, not in mempool
+
+    if(enableIX){
+        if (nResult < 10){
+            int signatures = GetTransactionLockSignatures();
+            if(signatures >= INSTANTX_SIGNATURES_REQUIRED){
+                return nInstantXDepth+nResult;
+            }
+        }
+    }
+
+    return nResult;
+}
+
+int CMerkleTx::GetTransactionLockSignatures() const
+{
+    if(!IsSporkActive(SPORK_2_INSTANTX)) return -3;
+    if(!fEnableInstantX) return -1;
+
+    //compile consessus vote
+    std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(GetHash());
+    if (i != mapTxLocks.end()){
+        return (*i).second.CountSignatures();
+    }
+
+    return -1;
+}
+
 
 int CMerkleTx::GetBlocksToMaturity() const
 {
